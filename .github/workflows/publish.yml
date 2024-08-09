@@ -51,11 +51,13 @@ jobs:
 
       - name: Build Lambda package
         run: | 
-          pip install --platform=manylinux2014_x86_64 --target=package \
+          pip install \ 
+          --platform=manylinux2014_x86_64 \ 
+          --target=package \
           --implementation cp \
           --python-version 3.12 \
           --only-binary=:all: --upgrade \
-          -t ./package -r requirements.txt
+          -r requirements.in
 
       - name: Set File Permissions
         run: |
