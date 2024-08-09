@@ -1,0 +1,6 @@
+pyjwt
+requests
+urllib3
+boto3
+warrant
+cryptography
