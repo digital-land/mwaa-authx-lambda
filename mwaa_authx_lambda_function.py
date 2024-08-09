@@ -8,8 +8,8 @@ import jwt
 import botocore
 import boto3
 from urllib.parse import quote
-# from requests.adapters import HTTPAdapter
-# from requests.packages.urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 # Environment Variables
 PRIVATE_ENDPOINT = os.environ.get('PRIVATE_ENDPOINT', '').strip()
@@ -20,6 +20,7 @@ COGNITO_DOMAIN = os.environ.get('COGNITO_DOMAIN').strip()
 AWS_REGION = os.environ.get('AWS_REGION')
 IDP_LOGIN_URI = os.environ.get('IDP_LOGIN_URI').strip()
 GROUP_TO_ROLE_MAP = json.loads(os.environ.get('GROUP_TO_ROLE_MAP', '{}'))
+DEFAULT_AIRFLOW_ROLE_ARN = os.environ.get('DEFAULT_AIRFLOW_ROLE_ARN').strip()
 ALB_COOKIE_NAME = os.environ.get('ALB_COOKIE_NAME', 'AWSELBAuthSessionCookie').strip()
 LOGOUT_REDIRECT_DELAY = 10  # seconds
 
@@ -59,7 +60,6 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': json.dumps({'error': 'Internal server error'})
         }
-
 
 def multivalue_to_singlevalue(headers):
     """
@@ -206,7 +206,7 @@ def get_iam_role_arn(jwt_payload):
     Returns the name of an IAM role based on the 'custom:idp-groups' contained in the JWT token
     """
     try:
-        role_arn = 'arn:aws:iam::955696714113:role/airflow-admin-role' #set default iam role
+        role_arn = DEFAULT_AIRFLOW_ROLE_ARN
         logger.info(f'JWT payload: {jwt_payload}')
         if 'custom:idp-groups' in jwt_payload:
             user_groups = parse_groups(jwt_payload['custom:idp-groups'])
