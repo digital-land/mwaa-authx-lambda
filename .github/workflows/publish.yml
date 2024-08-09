@@ -51,8 +51,8 @@ jobs:
 
       - name: Build Lambda package
         run: | 
-          pip install \ 
-          --platform=manylinux2014_x86_64 \ 
+          pip install \
+          --platform=manylinux2014_x86_64 \
           --target=package \
           --implementation cp \
           --python-version 3.12 \
