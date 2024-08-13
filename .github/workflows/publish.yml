@@ -76,6 +76,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.DEPLOY_AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
 
-      - name: Deploy AWS Lambda functions
+      - name: Upload AWS Lambda function to S3
         run: |
           aws s3 cp ./mwaa-authx-package.zip s3://${{ matrix.environment }}-mwaa-bucket/lambda/${{ matrix.environment }}-mwaa-authx/
