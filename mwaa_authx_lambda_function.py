@@ -41,20 +41,15 @@ def lambda_handler(event, context):
         if 'x-amzn-oidc-accesstoken' in headers:
             access_token = headers['x-amzn-oidc-accesstoken'][0]
             access_token_payload = access_token.split('.')[1]
-            logger.info('Access token payload encoded: {}'.format(access_token_payload))
+            logger.debug('Access token payload encoded: {}'.format(access_token_payload))
             access_token_payload_decoded = base64.b64decode(access_token_payload + '==')
-            logger.info('Access token payload decoded: {}'.format(access_token_payload_decoded))
+            logger.debug('Access token payload decoded: {}'.format(access_token_payload_decoded))
             access_token_json = json.loads(access_token_payload_decoded)
-            logger.info('Access token payload JSON: {}'.format(access_token_json))
-
-        if 'x-amzn-oidc-data' in headers:
-            encoded_jwt = headers['x-amzn-oidc-data'][0]
-            token_payload = decode_jwt(encoded_jwt)
         else:
             return close(headers)
 
         if path == '/aws_mwaa/aws-console-sso':
-            redirect = login(headers, token_payload)
+            redirect = login(headers, access_token_json)
         elif path == '/logout/':
             redirect = logout(headers, 'Logged out successfully')
         else:
@@ -91,7 +86,7 @@ def login(headers, jwt_payload):
     """
     try:
         role_arn = get_iam_role_arn(jwt_payload)
-        user_name = jwt_payload.get('custom:idp-name', role_arn)
+        user_name = jwt_payload.get('username', role_arn)
         host = headers['host'][0]
 
         if role_arn:
@@ -213,13 +208,13 @@ def get_mwaa_client(role_arn, user_name):
 
 def get_iam_role_arn(jwt_payload):
     """
-    Returns the name of an IAM role based on the 'custom:idp-groups' contained in the JWT token
+    Returns the name of an IAM role based on the 'cognito:groups' contained in the JWT token
     """
     try:
         role_arn = DEFAULT_AIRFLOW_ROLE_ARN
         logger.info(f'JWT payload: {jwt_payload}')
-        if 'custom:idp-groups' in jwt_payload:
-            user_groups = parse_groups(jwt_payload['custom:idp-groups'])
+        if 'cognito:groups' in jwt_payload:
+            user_groups = parse_groups(jwt_payload['cognito:groups'])
             logger.info(f'Parsed user groups: {user_groups}')
             for mapping in GROUP_TO_ROLE_MAP:
                 logger.info(f'Checking mapping: {mapping}')
