@@ -41,6 +41,8 @@ def lambda_handler(event, context):
         if 'x-amzn-oidc-data' in headers:
             encoded_jwt = headers['x-amzn-oidc-data'][0]
             token_payload = decode_jwt(encoded_jwt)
+            access_token = headers['x-amzn-oidc-accesstoken'][0]
+            logger.info('Access token payload: {}'.format(access_token))
         else:
             return close(headers)
 
@@ -60,6 +62,7 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': json.dumps({'error': 'Internal server error'})
         }
+
 
 def multivalue_to_singlevalue(headers):
     """
