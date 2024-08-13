@@ -214,8 +214,7 @@ def get_iam_role_arn(jwt_payload):
         role_arn = DEFAULT_AIRFLOW_ROLE_ARN
         logger.info(f'JWT payload: {jwt_payload}')
         if 'cognito:groups' in jwt_payload:
-            user_groups = parse_groups(jwt_payload['cognito:groups'])
-            logger.info(f'Parsed user groups: {user_groups}')
+            user_groups = jwt_payload['cognito:groups']
             for mapping in GROUP_TO_ROLE_MAP:
                 logger.info(f'Checking mapping: {mapping}')
                 if mapping['idp-group'] in user_groups:
@@ -231,18 +230,6 @@ def get_iam_role_arn(jwt_payload):
     except Exception as e:
         logger.error(f'Error in get_iam_role_arn function: {str(e)}', exc_info=True)
         return ''
-
-
-def parse_groups(groups):
-    """
-    Converts the groups SAML claim content to a list of strings
-    """
-    try:
-        groups = groups.replace('[', '').replace(']', '').replace(' ', '')
-        return groups.split(',')
-    except Exception as e:
-        logger.error(f'Error in parse_groups function: {str(e)}', exc_info=True)
-        return []
 
 
 def sanitize_value(value):
