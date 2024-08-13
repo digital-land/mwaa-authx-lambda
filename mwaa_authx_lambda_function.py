@@ -41,7 +41,7 @@ def lambda_handler(event, context):
         if 'x-amzn-oidc-accesstoken' in headers:
             access_token = headers['x-amzn-oidc-accesstoken'][0]
             access_token_payload = access_token.split('.')[1]
-            access_token_payload_decoded = base64.urlsafe_b64decode(access_token_payload)
+            access_token_payload_decoded = base64.b64decode(access_token_payload)
             logger.info('Access token payload: {}'.format(access_token_payload_decoded))
 
         if 'x-amzn-oidc-data' in headers:
