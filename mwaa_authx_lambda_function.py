@@ -38,9 +38,10 @@ def lambda_handler(event, context):
         path = event['path']
         headers = event['multiValueHeaders']
 
-        # if 'x-amzn-oidc-accesstoken' in headers:
-        #     access_token = decode_jwt(headers['x-amzn-oidc-accesstoken'][0])
-        #     logger.info('Access token payload: {}'.format(access_token))
+        if 'x-amzn-oidc-accesstoken' in headers:
+            access_token = headers['x-amzn-oidc-accesstoken'][0]
+            access_token_payload = access_token.split('.')[1]
+            logger.info('Access token payload: {}'.format(access_token_payload))
 
         if 'x-amzn-oidc-data' in headers:
             encoded_jwt = headers['x-amzn-oidc-data'][0]
