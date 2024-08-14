@@ -79,3 +79,11 @@ jobs:
       - name: Upload AWS Lambda function to S3
         run: |
           aws s3 cp ./mwaa-authx-package.zip s3://${{ matrix.environment }}-mwaa-bucket/lambda/${{ matrix.environment }}-mwaa-authx/
+
+      - name: Update AWS Lambda function code in development environment
+        if: ${{ matrix.environment == 'development' }}
+        run: |
+          aws lambda update-function-code \
+              --function-name development-mwaa-authx \
+              --s3-bucket development-mwaa-bucket \
+              --s3-key lambda/development-mwaa-authx/mwaa-authx-package.zip
