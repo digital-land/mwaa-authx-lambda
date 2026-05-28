@@ -15,7 +15,7 @@ jobs:
     outputs:
       environments: ${{ steps.environments.outputs.result }}
     steps:
-      - uses: actions/github-script@v6
+      - uses: actions/github-script@v8
         id: environments
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -34,10 +34,10 @@ jobs:
         environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
     environment: ${{ matrix.environment }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: 3.12
 
@@ -70,7 +70,7 @@ jobs:
           sudo -s sh -c 'zip -g mwaa-authx-package.zip mwaa_authx_lambda_function.py'
 
       - name: Set up AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.DEPLOY_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.DEPLOY_AWS_SECRET_ACCESS_KEY }}
