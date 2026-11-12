@@ -60,7 +60,7 @@ jobs:
           --implementation cp \
           --python-version 3.12 \
           --only-binary=:all: --upgrade \
-          -r requirements.in
+          -r requirements.txt
 
       - name: Set File Permissions
         run: |

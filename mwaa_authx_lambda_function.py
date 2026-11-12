@@ -9,7 +9,7 @@ import botocore
 import boto3
 from urllib.parse import quote
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
 
 # Environment Variables
 PRIVATE_ENDPOINT = os.environ.get('PRIVATE_ENDPOINT', '').strip()
