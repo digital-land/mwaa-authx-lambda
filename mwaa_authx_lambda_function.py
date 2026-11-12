@@ -34,16 +34,16 @@ def lambda_handler(event, context):
     Lambda handler
     """
     try:
-        logger.info(json.dumps(event))
+        # Never log the raw event: its headers carry the Cognito access token,
+        # the ALB OIDC data and session cookies.
         path = event['path']
         headers = event['multiValueHeaders']
+        logger.info(f'Request: {event.get("httpMethod")} {path}')
 
         if 'x-amzn-oidc-accesstoken' in headers:
             access_token = headers['x-amzn-oidc-accesstoken'][0]
             access_token_payload = access_token.split('.')[1]
-            logger.debug('Access token payload encoded: {}'.format(access_token_payload))
             access_token_payload_decoded = base64.b64decode(access_token_payload + '==')
-            logger.debug('Access token payload decoded: {}'.format(access_token_payload_decoded))
             access_token_json = json.loads(access_token_payload_decoded)
         else:
             return close(headers)
@@ -55,7 +55,9 @@ def lambda_handler(event, context):
         else:
             redirect = logout(headers, '')
 
-        logger.info(json.dumps(redirect))
+        # Only log the status: the response carries the MWAA web login token
+        # (login) or the Airflow session cookie (logout).
+        logger.info(f'Response: {redirect.get("statusCode")}')
         return redirect
 
     except Exception as e:
@@ -113,8 +115,9 @@ def login(headers, jwt_payload):
                 redirect = logout(headers, 'There was an error while logging in, please contact your administrator.')
         else:
             redirect = logout(headers, 'There is no valid role associated with your user.')
-        # Log the final redirect URL
-        logger.info(f"Final Redirect URL: {redirect['multiValueHeaders']['Location'][0]}")
+        # Log the final redirect URL without the fragment, which holds the MWAA web login token
+        location = redirect.get('multiValueHeaders', {}).get('Location', [''])[0]
+        logger.info(f"Final Redirect URL: {location.split('#')[0]}")
         return redirect
 
     except Exception as e:
@@ -212,7 +215,7 @@ def get_iam_role_arn(jwt_payload):
     """
     try:
         role_arn = DEFAULT_AIRFLOW_ROLE_ARN
-        logger.info(f'JWT payload: {jwt_payload}')
+        logger.info(f"User: {jwt_payload.get('username')}, groups: {jwt_payload.get('cognito:groups', [])}")
         if 'cognito:groups' in jwt_payload:
             user_groups = jwt_payload['cognito:groups']
             for mapping in GROUP_TO_ROLE_MAP:
@@ -225,7 +228,7 @@ def get_iam_role_arn(jwt_payload):
             if not role_arn:
                 logger.warning(f'No matching IAM role found for user groups: {user_groups}')
         else:
-            logger.warning('No custom:idp-groups found in JWT payload')
+            logger.warning('No cognito:groups found in JWT payload, using default role')
         return role_arn
     except Exception as e:
         logger.error(f'Error in get_iam_role_arn function: {str(e)}', exc_info=True)
